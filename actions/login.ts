@@ -7,6 +7,7 @@ import { DEFAULT_LOGIN } from "@/routes";
 import { AuthError } from "next-auth";
 import { generateVerificationToken } from "@/lib/token";
 import { getUserByEmail } from "@/data/user";
+import { sendVerificationEmail } from "@/lib/mail";
 
 export const login = async (values: z.infer<typeof LoginSchema>) => {
   const validatedFields = LoginSchema.safeParse(values);
@@ -18,8 +19,15 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
   if (!existingUser || !existingUser.email || !existingUser.password) {
     return { error: "User does not exist" };
   }
+
   if (!existingUser.emailVerified) {
-    await generateVerificationToken(existingUser.email);
+    const verificationToken = await generateVerificationToken(
+      existingUser.email
+    );
+    await sendVerificationEmail(
+      verificationToken.email,
+      verificationToken.token
+    );
     return {
       error: "Email not verified. A new verification email has been sent.",
     };

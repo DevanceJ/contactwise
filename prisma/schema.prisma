@@ -80,3 +80,11 @@ model VerificationToken {
   expiresAt DateTime
   @@unique([email, token])
 }
+
+model PasswordResetToken {
+  id        String @id @default(cuid())
+  email     String
+  token     String @unique
+  expiresAt DateTime
+  @@unique([email, token])
+}

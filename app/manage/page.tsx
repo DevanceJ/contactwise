@@ -4,6 +4,7 @@ import axios from "axios";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { AddUserSchema } from "@/schema";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -24,13 +25,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
-
-const AddUserSchema = z.object({
-  tenantId: z.string(),
-  userId: z.string(),
-  role: z.enum(["MANAGER", "USER"]),
-});
 
 const AdminPage = () => {
   const [users, setUsers] = useState<User[]>([]);
