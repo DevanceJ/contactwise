@@ -20,16 +20,12 @@ import { FormSuc } from "../form-suc";
 import { createTenant } from "@/actions/createTenant";
 import { useTransition, useState } from "react";
 
-interface TenantFormProps {
-  name?: string;
-  description?: string;
-}
-export const TenantForm = ({ name, description }: TenantFormProps) => {
+export const TenantForm = () => {
   const form = useForm<z.infer<typeof TenantSchema>>({
     resolver: zodResolver(TenantSchema),
     defaultValues: {
-      name: name || "",
-      description: description || "",
+      name: "",
+      description: "",
     },
   });
   const [isPending, startTransition] = useTransition();
@@ -45,13 +41,16 @@ export const TenantForm = ({ name, description }: TenantFormProps) => {
           setError(res.error);
         } else {
           setSuccess(res.success);
-          form.reset();
+          window.location.href = "/home";
         }
       });
     });
   };
   return (
-    <CardWrapper headerLabel="Create Tenant">
+    <CardWrapper
+      headerLabel="Create Tenant"
+      backButtonHref="/home"
+      backButtonLabel="Back to Home">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className=" space-y-6">
           <div className=" space-y-4">

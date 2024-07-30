@@ -1,6 +1,5 @@
 "use client";
 import { CardWrapper } from "@/components/auth/card-wrapper";
-import * as z from "zod";
 import {
   Form,
   FormControl,
@@ -10,16 +9,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { FormErr } from "@/components/form-err";
+import { FormSuc } from "@/components/form-suc";
 
 import { ResetPasswordSchema } from "@/schema";
-import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
+import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormErr } from "../form-err";
-import { FormSuc } from "../form-suc";
-import { resetPassword } from "@/actions/reset";
+import { resetPassword } from "@/actions/resetPassword";
 import { useTransition, useState } from "react";
-import Link from "next/link";
+
 export const ResetPassword = () => {
   const form = useForm<z.infer<typeof ResetPasswordSchema>>({
     resolver: zodResolver(ResetPasswordSchema),
@@ -27,6 +27,7 @@ export const ResetPassword = () => {
       email: "",
     },
   });
+
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
@@ -39,6 +40,7 @@ export const ResetPassword = () => {
         if (data) {
           setError(data.error);
           setSuccess(data?.success);
+          // form.reset({ email: "" });
         }
       });
     });

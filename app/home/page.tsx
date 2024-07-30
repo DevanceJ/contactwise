@@ -20,6 +20,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Edit } from "lucide-react";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -39,9 +46,19 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { TenantSchema } from "@/schema";
-import { FormErr } from "@/components/form-err";
-import { FormSuc } from "@/components/form-suc";
-import { Tenant } from "@prisma/client";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Tenant, Role } from "@prisma/client";
+import { useSearchParams } from "next/navigation";
 
 type MemberWithUser = Prisma.MemberGetPayload<{
   include: {
@@ -53,11 +70,17 @@ const Home = () => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [currentTenant, setCurrentTenant] = useState<Tenant | null>(null);
   const [members, setMembers] = useState<MemberWithUser[]>([]);
+  const [selectedMember, setSelectedMember] = useState<MemberWithUser | null>(
+    null
+  );
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [managers, setManagers] = useState<MemberWithUser[]>([]);
   const user = useCurrentUser();
+  const searchParam = useSearchParams();
 
   const form = useForm<z.infer<typeof TenantSchema>>({
     resolver: zodResolver(TenantSchema),
@@ -67,19 +90,22 @@ const Home = () => {
     },
   });
 
-  useEffect(() => {
-    const fetchTenants = async (userId: string) => {
-      try {
-        const response = await axios.get(`/api/tenants?id=${userId}`);
-        setTenants(response.data);
-      } catch (error) {
-        console.error("Failed to fetch tenants", error);
-      }
-    };
-    if (user?.id) {
-      fetchTenants(user.id);
+  const fetchTenants = async () => {
+    try {
+      const response = await axios.get(`/api/tenants`);
+      setTenants(response.data);
+    } catch (error) {
+      console.error("Failed to fetch tenants", error);
     }
-  }, [user?.id]);
+  };
+  useEffect(() => {
+    const reload = searchParam.get("reload");
+    if (reload) {
+      window.location.href = window.location.origin + "/home";
+      console.log("reloading");
+    }
+    fetchTenants();
+  }, [searchParam]);
 
   const fetchMembers = async (tenantId: string) => {
     setLoading(true);
@@ -106,8 +132,6 @@ const Home = () => {
   };
 
   const onSubmit = async (values: z.infer<typeof TenantSchema>) => {
-    setError("");
-    setSuccess("");
     try {
       await axios.put(`/api/tenants/${currentTenant?.id}`, values);
       setTenants((prevTenants) =>
@@ -135,6 +159,41 @@ const Home = () => {
     } catch (error) {
       console.error("Failed to remove member", error);
     }
+  };
+
+  const handleRoleChange = (member: MemberWithUser, role: string) => {
+    setSelectedMember(member);
+    setSelectedRole(role);
+    setIsDialogOpen(true);
+  };
+  const confirmRoleChange = async () => {
+    if (selectedRole && selectedMember) {
+      try {
+        await axios.put(
+          `/api/tenants/${selectedMember.tenantId}/changerole/${selectedMember.id}`,
+          {
+            role: selectedRole,
+          }
+        );
+        setMembers((prevMembers) =>
+          prevMembers.map((m) =>
+            m.id === selectedMember.id
+              ? { ...m, role: selectedRole as Role }
+              : m
+          )
+        );
+      } catch (error) {
+        console.error("Failed to update member role", error);
+      }
+    }
+    setSelectedMember(null);
+    setSelectedRole(null);
+    setIsDialogOpen(false);
+  };
+  const cancelRoleChange = () => {
+    setSelectedMember(null);
+    setSelectedRole(null);
+    setIsDialogOpen(false);
   };
 
   return (
@@ -173,7 +232,7 @@ const Home = () => {
                         <DialogTitle>Edit Organization</DialogTitle>
                         <DialogDescription>
                           Make changes to the organization details here. Click
-                          save when you’re done.
+                          save when you&apos;re done.
                         </DialogDescription>
                       </DialogHeader>
                       <Form {...form}>
@@ -218,8 +277,8 @@ const Home = () => {
                               )}
                             />
                           </div>
-                          <FormErr message={error} />
-                          <FormSuc message={success} />
+                          {/* <FormErr message={error} /> */}
+                          {/* <FormSuc message={success} /> */}
                           <DialogFooter>
                             <Button
                               disabled={form.formState.isSubmitting}
@@ -244,11 +303,18 @@ const Home = () => {
         <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
           <div className="w-full flex-1">
             {user?.isAdmin && (
-              <Link href="/manage">
-                <span className="text-lg text-gray-800 underline">
-                  Manage users
-                </span>
-              </Link>
+              <div className=" space-x-6">
+                <Link href="/manage">
+                  <span className="text-lg font-semibold text-black ">
+                    Manage users
+                  </span>
+                </Link>
+                <Link href="/add">
+                  <span className="text-lg font-semibold text-black ">
+                    Create tenant
+                  </span>
+                </Link>
+              </div>
             )}
           </div>
           <DropdownMenu>
@@ -260,9 +326,6 @@ const Home = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
               <form action={async () => await signOut()}>
                 <button className="w-full" type="submit">
@@ -285,7 +348,10 @@ const Home = () => {
                       <th className="border p-2 text-left">Name</th>
                       <th className="border p-2 text-left">Email</th>
                       <th className="border p-2 text-left">Role</th>
-                      <th className="border p-2 text-left">Actions</th>
+                      {(user?.isAdmin ||
+                        managers.some(
+                          (manager) => manager.userId === user?.id
+                        )) && <th className="border p-2 text-left">Actions</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -293,12 +359,46 @@ const Home = () => {
                       <tr key={member.id}>
                         <td className="border p-2">{member.user.name}</td>
                         <td className="border p-2">{member.user.email}</td>
-                        <td className="border p-2">{member.role}</td>
-                        <td className="border p-2">
-                          {(user?.isAdmin ||
-                            managers.some(
-                              (manager) => manager.userId === user?.id
-                            )) && (
+
+                        {user?.isAdmin ||
+                        managers.some(
+                          (manager) => manager.userId === user?.id
+                        ) ? (
+                          <td className="border p-2">
+                            <Select
+                              value={member.role}
+                              onValueChange={(role) =>
+                                handleRoleChange(member, role)
+                              }>
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder={member.role} />
+                              </SelectTrigger>
+                              {member.role === "MANAGER" ? (
+                                <SelectContent>
+                                  <SelectItem value="MANAGER">
+                                    MANAGER
+                                  </SelectItem>
+                                  <SelectItem value="USER">USER</SelectItem>
+                                </SelectContent>
+                              ) : (
+                                <SelectContent>
+                                  <SelectItem value="USER">USER</SelectItem>
+                                  <SelectItem value="MANAGER">
+                                    MANAGER
+                                  </SelectItem>
+                                </SelectContent>
+                              )}
+                            </Select>
+                          </td>
+                        ) : (
+                          <td className="border p-2">{member.role}</td>
+                        )}
+                        {(user?.isAdmin ||
+                          (managers.some(
+                            (manager) => manager.userId === user?.id
+                          ) &&
+                            !member.user.isAdmin)) && (
+                          <td className="border p-2">
                             <Button
                               variant="outline"
                               onClick={() =>
@@ -306,8 +406,8 @@ const Home = () => {
                               }>
                               Remove
                             </Button>
-                          )}
-                        </td>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -319,6 +419,27 @@ const Home = () => {
               )}
             </div>
           </div>
+          {selectedMember && (
+            <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to change the role of{" "}
+                    {selectedMember.user.name} to {selectedRole}?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel onClick={cancelRoleChange}>
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction onClick={confirmRoleChange}>
+                    Confirm
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </main>
       </div>
     </div>

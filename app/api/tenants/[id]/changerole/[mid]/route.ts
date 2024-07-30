@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 
 export const dynamic = "force-dynamic";
 
-export async function DELETE(request: Request) {
+export async function PUT(req: Request) {
   try {
     const session = await auth();
     if (!session || !session.user) {
@@ -13,7 +13,7 @@ export async function DELETE(request: Request) {
     const userId = session.user.id;
     const isAdmin = session.user.isAdmin;
 
-    const urlParts = request.url.split("/");
+    const urlParts = req.url.split("/");
     const tenantId = urlParts[urlParts.length - 3];
     const memberId = urlParts[urlParts.length - 1];
 
@@ -36,16 +36,21 @@ export async function DELETE(request: Request) {
       return new Response("Unauthorized", { status: 401 });
     }
 
-    // Delete the member
-    await db.member.delete({
-      where: {
-        id: String(memberId),
-      },
+    const { role } = await req.json();
+
+    if (!role) {
+      return new Response("Role is required", {
+        status: 400,
+      });
+    }
+
+    await db.member.update({
+      where: { id: memberId },
+      data: { role },
     });
 
-    return new Response("Member removed", { status: 200 });
+    return new Response("Role changed", { status: 200 });
   } catch (error) {
-    // console.error("Error removing member:", error);
     return new Response("Internal Server Error", { status: 500 });
   }
 }

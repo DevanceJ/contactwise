@@ -1,6 +1,5 @@
 "use client";
 import { CardWrapper } from "@/components/auth/card-wrapper";
-import * as z from "zod";
 import {
   Form,
   FormControl,
@@ -10,18 +9,18 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
+import { FormErr } from "@/components/form-err";
+import { FormSuc } from "@/components/form-suc";
+import { Input } from "@/components/ui/input";
 
 import { NewPasswordSchema } from "@/schema";
-import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
+import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormErr } from "../form-err";
-import { FormSuc } from "../form-suc";
-import { resetPassword } from "@/actions/reset";
 import { useTransition, useState } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { newPassword } from "@/actions/newPassword";
+
 export const NewPasswordForm = () => {
   const form = useForm<z.infer<typeof NewPasswordSchema>>({
     resolver: zodResolver(NewPasswordSchema),
@@ -46,6 +45,7 @@ export const NewPasswordForm = () => {
         }
       });
     });
+    window.location.href = "/auth/login";
   };
   return (
     <CardWrapper

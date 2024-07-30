@@ -9,9 +9,7 @@ export async function GET(request: Request) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const { searchParams } = new URL(request.url);
-  const id = searchParams.get("id");
-
+  const id = session.user.id;
   // only admins can see all tenants
   if (session?.user.isAdmin === true) {
     try {
