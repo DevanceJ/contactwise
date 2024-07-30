@@ -42,7 +42,7 @@ export async function POST(req: Request, res: Response) {
       },
     });
 
-    return new Response(JSON.stringify(newMember));
+    return new Response("User added to tenant successfully", { status: 200 });
   } catch (error) {
     return null;
   }
