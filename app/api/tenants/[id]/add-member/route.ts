@@ -44,6 +44,6 @@ export async function POST(req: Request, res: Response) {
 
     return new Response("User added to tenant successfully", { status: 200 });
   } catch (error) {
-    return null;
+    return new Response("Internal Server Error", { status: 500 });
   }
 }
