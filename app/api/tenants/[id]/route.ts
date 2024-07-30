@@ -34,6 +34,6 @@ export async function PUT(request: Request) {
 
     return new Response(JSON.stringify(updatedTenant));
   } catch (error) {
-    return null;
+    return new Response("Internal Server Error", { status: 500 });
   }
 }

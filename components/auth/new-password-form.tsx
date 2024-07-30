@@ -42,10 +42,12 @@ export const NewPasswordForm = () => {
         if (data) {
           setError(data.error);
           setSuccess(data?.success);
+          if (data.success) {
+            window.location.href = "/auth/login";
+          }
         }
       });
     });
-    window.location.href = "/auth/login";
   };
   return (
     <CardWrapper

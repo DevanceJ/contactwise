@@ -85,20 +85,7 @@ export const AddUserForm = () => {
       setError("Failed to add user to tenant");
     }
   };
-  //   const onSubmit = (values: z.infer<typeof AddUserSchema>) => {
-  //     setError("");
-  //     setSuccess("");
-  //     startTransition(() => {
-  //       createTenant(values).then((res) => {
-  //         if (res.error) {
-  //           setError(res.error);
-  //         } else {
-  //           setSuccess(res.success);
-  //           window.location.href = "/home";
-  //         }
-  //       });
-  //     });
-  //   };
+
   return (
     <CardWrapper
       headerLabel="Add Member"

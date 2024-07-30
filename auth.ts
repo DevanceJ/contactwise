@@ -33,12 +33,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       return true;
     },
-    async jwt({ token, user }) {
+    async jwt({ token }) {
       // console.log({ token });
       // console.log({ user });
-      if (user) {
-        token.id = user.id;
-        token.isAdmin = user.isAdmin;
+      if (!token.sub) {
+        return token;
+      }
+      const existingUser = await getUserById(token.sub);
+      if (existingUser) {
+        token.id = existingUser.id;
+        token.isAdmin = existingUser.isAdmin;
       }
       return token;
     },

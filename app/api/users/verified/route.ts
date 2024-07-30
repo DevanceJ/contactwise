@@ -35,6 +35,6 @@ export async function GET(request: Request) {
     return new Response(JSON.stringify(verifiedUsers));
   } catch (error) {
     console.error(error);
-    return null;
+    return new Response("Internal Server Error", { status: 500 });
   }
 }

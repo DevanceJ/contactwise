@@ -16,7 +16,7 @@ export async function GET(request: Request) {
       const tenants = await db.tenant.findMany();
       return new Response(JSON.stringify(tenants));
     } catch (error) {
-      return null;
+      return new Response("Internal Server Error", { status: 500 });
     }
   }
 
@@ -33,6 +33,6 @@ export async function GET(request: Request) {
     });
     return new Response(JSON.stringify(tenants));
   } catch (error) {
-    return null;
+    return new Response("Internal Server Error", { status: 500 });
   }
 }
