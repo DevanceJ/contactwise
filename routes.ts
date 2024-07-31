@@ -10,7 +10,7 @@ export const authRoute = [
 ];
 
 // Routes with only admin access
-export const adminRoute = ["/admin", "/manage"];
+export const adminRoute = ["/admin", "/manage", "/add"];
 
 // Routes for authenticated users(verified and logged in)
 export const userRoute = ["/home"];

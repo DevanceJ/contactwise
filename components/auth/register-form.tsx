@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { RegisterSchema } from "@/schema";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormErr } from "../form-err";
@@ -25,6 +26,7 @@ export const RegisterForm = () => {
       email: "",
       password: "",
       name: "",
+      requestAdminAccess: false,
     },
   });
   const [isPending, startTransition] = useTransition();
@@ -113,6 +115,25 @@ export const RegisterForm = () => {
                   </FormItem>
                 );
               }}
+            />
+            <FormField
+              control={form.control}
+              name="requestAdminAccess"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex space-x-2">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={isPending}
+                      />
+                    </FormControl>
+                    <FormLabel>Request Admin Access</FormLabel>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
           </div>
           <FormErr message={error} />
