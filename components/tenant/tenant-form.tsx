@@ -19,7 +19,6 @@ import { FormErr } from "../form-err";
 import { FormSuc } from "../form-suc";
 import { createTenant } from "@/actions/createTenant";
 import { useTransition, useState } from "react";
-import { useRouter } from "next/router";
 
 export const TenantForm = () => {
   const form = useForm<z.infer<typeof TenantSchema>>({
@@ -32,7 +31,6 @@ export const TenantForm = () => {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
-  const router = useRouter();
 
   const onSubmit = (values: z.infer<typeof TenantSchema>) => {
     setError("");
@@ -43,8 +41,7 @@ export const TenantForm = () => {
           setError(res.error);
         } else {
           setSuccess(res.success);
-          // window.location.href = "/home";
-          router.push("/home");
+          window.location.href = "/home";
         }
       });
     });
