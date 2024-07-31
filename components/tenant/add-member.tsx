@@ -72,7 +72,7 @@ export const AddUserForm = () => {
 
       fetchUsers();
     }
-  }, [form.watch("tenantId")]);
+  }, [form, form.watch("tenantId")]);
 
   const onSubmit = async (values: z.infer<typeof AddUserSchema>) => {
     setError("");
@@ -80,8 +80,9 @@ export const AddUserForm = () => {
     try {
       startTransition(async () => {
         await axios.post(`/api/tenants/${values.tenantId}/add-member`, values);
+        setSuccess("User added to tenant successfully");
+        form.reset();
       });
-      setSuccess("User added to tenant successfully");
     } catch (error) {
       setError("Failed to add user to tenant");
     }

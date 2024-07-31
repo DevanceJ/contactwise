@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import { FaBars, FaRegCircleUser, FaCross } from "react-icons/fa6";
 import {
   Cross2Icon,
   HamburgerMenuIcon,
@@ -9,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { signOut } from "next-auth/react";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -85,6 +84,7 @@ const Home = () => {
   const [success, setSuccess] = useState<string | undefined>("");
   const [managers, setManagers] = useState<MemberWithUser[]>([]);
   const [sideNavOpen, setSideNavOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const user = useCurrentUser();
   const searchParam = useSearchParams();
 
@@ -158,10 +158,14 @@ const Home = () => {
 
   const handleRemoveMember = async (memberId: string, tenantId: string) => {
     try {
-      await axios.delete(`/api/tenants/${tenantId}/remove-member/${memberId}`);
-      setMembers((prevMembers) =>
-        prevMembers.filter((member) => member.id !== memberId)
-      );
+      startTransition(async () => {
+        await axios.delete(
+          `/api/tenants/${tenantId}/remove-member/${memberId}`
+        );
+        setMembers((prevMembers) =>
+          prevMembers.filter((member) => member.id !== memberId)
+        );
+      });
     } catch (error) {
       console.error("Failed to remove member", error);
     }
@@ -175,19 +179,21 @@ const Home = () => {
   const confirmRoleChange = async () => {
     if (selectedRole && selectedMember) {
       try {
-        await axios.put(
-          `/api/tenants/${selectedMember.tenantId}/changerole/${selectedMember.id}`,
-          {
-            role: selectedRole,
-          }
-        );
-        setMembers((prevMembers) =>
-          prevMembers.map((m) =>
-            m.id === selectedMember.id
-              ? { ...m, role: selectedRole as Role }
-              : m
-          )
-        );
+        startTransition(async () => {
+          await axios.put(
+            `/api/tenants/${selectedMember.tenantId}/changerole/${selectedMember.id}`,
+            {
+              role: selectedRole,
+            }
+          );
+          setMembers((prevMembers) =>
+            prevMembers.map((m) =>
+              m.id === selectedMember.id
+                ? { ...m, role: selectedRole as Role }
+                : m
+            )
+          );
+        });
       } catch (error) {
         console.error("Failed to update member role", error);
       }
@@ -483,6 +489,7 @@ const Home = () => {
                           <td className="border p-2">
                             <Select
                               value={member.role}
+                              disabled={isPending}
                               onValueChange={(role) =>
                                 handleRoleChange(member, role)
                               }>
@@ -516,6 +523,7 @@ const Home = () => {
                             !member.user.isAdmin)) && (
                           <td className="border p-2">
                             <Button
+                              disabled={isPending}
                               variant="outline"
                               onClick={() =>
                                 handleRemoveMember(member.id, member.tenantId)
