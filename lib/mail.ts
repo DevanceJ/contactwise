@@ -6,7 +6,7 @@ export const sendVerificationEmail = async (email: string, token: string) => {
   const verificationURL = `${url}/auth/verify-email?token=${token}`;
 
   await resend.emails.send({
-    from: "onboarding@resend.dev",
+    from: "noreply@mail.divi.wtf",
     to: email,
     subject: "Verify your email",
     html: `
@@ -21,7 +21,7 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
   const passwordResetURL = `${url}/auth/reset-password?token=${token}`;
 
   await resend.emails.send({
-    from: "onboarding@resend.dev",
+    from: "noreply@mail.divi.wtf",
     to: email,
     subject: "Reset your password",
     html: `
