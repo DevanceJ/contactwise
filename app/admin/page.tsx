@@ -12,21 +12,27 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { EnterIcon } from "@radix-ui/react-icons";
 import axios from "axios";
 import { User } from "@prisma/client";
+import { RoleGate } from "@/components/auth/role-gate";
+
 const AdminAccess = () => {
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
 
   const fetchUsers = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(`/api/users/requestedaccess`);
-      // console.log("fetchUsers -> response", response.data);
       setUsers(response.data);
     } catch (error) {
-      console.error("Failed to fetch tenants", error);
+      console.error("Failed to fetch users", error);
+    } finally {
+      setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -41,80 +47,73 @@ const AdminAccess = () => {
   };
 
   return (
-    <main className="flex-1 p-4 lg:p-6">
-      <h1 className="text-lg font-semibold md:text-2xl mb-4">Users</h1>
-      <div className="rounded-lg border shadow-sm">
-        <div className="overflow-x-auto">
-          {loading ? (
-            <p className="text-center p-4">Loading...</p>
-          ) : (
-            <table className="w-full border-collapse">
-              <thead>
-                <tr>
-                  <th className="border p-2 text-left">Name</th>
-                  <th className="border p-2 text-left">Email</th>
-                  <th className="border p-2 text-left">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr key={user.id}>
-                    <td className="border p-2">{user.name}</td>
-                    <td className="border p-2">{user.email}</td>
-                    <td className="border p-2">
-                      <AlertDialog>
-                        <AlertDialogTrigger>
-                          <Button variant="default">Make Admin</Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Are you absolutely sure?
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to change the role of{" "}
-                              {user.name} to Admin?
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => makeAdmin(user.id)}>
-                              Confirm
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+    <RoleGate>
+      <main className="flex-1 p-4 lg:p-6">
+        <div className="flex items-center justify-between mb-4">
+          <Button
+            variant="ghost"
+            onClick={() => window.location.replace("/home")}
+            className="text-lg px-4">
+            &larr; Back
+          </Button>
+          <h1 className="text-lg font-semibold md:text-xl">Manage Users</h1>
         </div>
-      </div>
-      {/* {selectedMember && (
-        <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to change the role of{" "}
-                {selectedMember.user.name} to {selectedRole}?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={cancelRoleChange}>
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction onClick={confirmRoleChange}>
-                Confirm
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )} */}
-    </main>
+
+        <div className="rounded-lg border shadow-sm bg-white">
+          <div className="overflow-x-auto">
+            {loading ? (
+              <p className="text-center p-4">Loading...</p>
+            ) : (
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="border p-2 text-left">Name</th>
+                    <th className="border p-2 text-left">Email</th>
+                    <th className="border p-2 text-left">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user) => (
+                    <tr key={user.id} className="">
+                      <td className="border p-2">{user.name}</td>
+                      <td className="border p-2">{user.email}</td>
+                      <td className="border p-2">
+                        <AlertDialog>
+                          <AlertDialogTrigger>
+                            <div className="flex items-center space-x-2 cursor-pointer ">
+                              <EnterIcon fontWeight={600} />
+                              <span className="font-semibold">Make Admin</span>
+                            </div>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Are you absolutely sure?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to change the role of{" "}
+                                {user.name} to Admin?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => makeAdmin(user.id)}>
+                                Confirm
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      </main>
+    </RoleGate>
   );
 };
 

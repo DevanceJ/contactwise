@@ -1,6 +1,11 @@
 "use client";
 import Link from "next/link";
-import { FaRegCircleUser } from "react-icons/fa6";
+import { FaBars, FaRegCircleUser, FaCross } from "react-icons/fa6";
+import {
+  Cross2Icon,
+  HamburgerMenuIcon,
+  PersonIcon,
+} from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
 import { signOut } from "next-auth/react";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -79,6 +84,7 @@ const Home = () => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [managers, setManagers] = useState<MemberWithUser[]>([]);
+  const [sideNavOpen, setSideNavOpen] = useState(false);
   const user = useCurrentUser();
   const searchParam = useSearchParams();
 
@@ -196,6 +202,10 @@ const Home = () => {
     setIsDialogOpen(false);
   };
 
+  const toggleNav = () => {
+    setSideNavOpen(!sideNavOpen);
+  };
+  // md:grid-cols-[220px_1fr]
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       {/* Sidebar */}
@@ -298,34 +308,140 @@ const Home = () => {
         </div>
       </div>
 
+      {sideNavOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 md:hidden">
+          <div className="absolute inset-y-0 left-0 w-64 bg-white shadow-lg p-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold">Tenants</h3>
+              <Button variant="ghost" onClick={toggleNav}>
+                <Cross2Icon />
+              </Button>
+            </div>
+            {tenants.map((tenant) => (
+              <div
+                key={tenant.id}
+                className="mb-4 flex items-center justify-between">
+                <Button
+                  onClick={() => handleTenantClick(tenant)}
+                  variant="ghost"
+                  className="flex-1 text-muted-foreground hover:text-primary">
+                  {tenant.name}
+                </Button>
+                {user?.isAdmin && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="ghost" onClick={() => openModal(tenant)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-60 sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Edit Organization</DialogTitle>
+                        <DialogDescription>
+                          Make changes to the organization details here. Click
+                          save when you&apos;re done.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <Form {...form}>
+                        <form
+                          onSubmit={form.handleSubmit(onSubmit)}
+                          className="space-y-6">
+                          <div className="space-y-4">
+                            <FormField
+                              control={form.control}
+                              name="name"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Name</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      disabled={form.formState.isSubmitting}
+                                      placeholder="HR Tenant"
+                                      type="text"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="description"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Description</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      disabled={form.formState.isSubmitting}
+                                      placeholder="HR Tenant for HR team"
+                                      type="text"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <DialogFooter>
+                            <Button
+                              type="submit"
+                              disabled={form.formState.isSubmitting}>
+                              Save changes
+                            </Button>
+                          </DialogFooter>
+                        </form>
+                      </Form>
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
       <div className="flex flex-col">
         <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
           <div className="w-full flex-1">
             {user?.isAdmin && (
-              <div className=" space-x-6">
+              <div className="space-x-2 md:space-x-6">
                 <Link href="/manage">
-                  <span className="text-lg font-semibold text-black ">
-                    Manage users
+                  <span className="text-xs md:text-base font-medium text-gray-700 hover:text-black ">
+                    Manage
                   </span>
                 </Link>
                 <Link href="/add">
-                  <span className="text-lg font-semibold text-black ">
-                    Create tenant
+                  <span className="text-xs md:text-base font-medium text-gray-700 hover:text-black ">
+                    New Tenant
+                  </span>
+                </Link>
+                <Link href="/admin">
+                  <span className="text-xs md:text-base font-medium text-gray-700 hover:text-black">
+                    Admin
                   </span>
                 </Link>
               </div>
             )}
           </div>
+          <Button
+            variant="ghost"
+            className="md:hidden"
+            onClick={toggleNav}
+            aria-label="Toggle side navigation">
+            {sideNavOpen ? <Cross2Icon /> : <HamburgerMenuIcon />}
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="icon" className="rounded-full">
-                <FaRegCircleUser className="h-5 w-5" />
+                <PersonIcon className="h-5 w-5" />
                 <span className="sr-only">Toggle user menu</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>{user?.name}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <form action={async () => await signOut()}>
                 <button className="w-full" type="submit">
