@@ -41,7 +41,6 @@ export const TenantForm = () => {
           setError(res.error);
         } else {
           setSuccess(res.success);
-          window.location.href = "/home";
         }
       });
     });

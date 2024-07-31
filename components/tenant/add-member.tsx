@@ -82,7 +82,6 @@ export const AddUserForm = () => {
         await axios.post(`/api/tenants/${values.tenantId}/add-member`, values);
       });
       setSuccess("User added to tenant successfully");
-      window.location.href = "/home";
     } catch (error) {
       setError("Failed to add user to tenant");
     }
