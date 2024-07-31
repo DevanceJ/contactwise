@@ -22,7 +22,7 @@ import axios from "axios";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Edit } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -137,6 +137,19 @@ const Home = () => {
     });
   };
 
+  const deleteTenant = async (tenant: Tenant) => {
+    try {
+      startTransition(async () => {
+        await axios.delete(`/api/tenants/${tenant.id}`);
+        setTenants((prevTenants) =>
+          prevTenants.filter((t) => t.id !== tenant.id)
+        );
+      });
+    } catch (error) {
+      console.error("Failed to delete tenant", error);
+    }
+  };
+
   const onSubmit = async (values: z.infer<typeof TenantSchema>) => {
     try {
       await axios.put(`/api/tenants/${currentTenant?.id}`, values);
@@ -237,6 +250,15 @@ const Home = () => {
                   {tenant.name}
                 </Button>
                 {user?.isAdmin && (
+                  <Button
+                    disabled={isPending}
+                    variant="ghost"
+                    onClick={() => deleteTenant(tenant)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+
+                {user?.isAdmin && (
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="ghost" onClick={() => openModal(tenant)}>
@@ -334,10 +356,23 @@ const Home = () => {
                   {tenant.name}
                 </Button>
                 {user?.isAdmin && (
+                  <Button
+                    disabled={isPending}
+                    variant="ghost"
+                    onClick={() => deleteTenant(tenant)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+                {user?.isAdmin && (
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="ghost" onClick={() => openModal(tenant)}>
                         <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => deleteTenant(tenant)}>
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-60 sm:max-w-[425px]">

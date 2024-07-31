@@ -63,8 +63,8 @@ model Member {
   tenantId  String
   role      Role
   joiningDate DateTime @default(now())
-  user User @relation(fields: [userId], references: [id])
-  tenant Tenant @relation(fields: [tenantId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([userId, tenantId])
 }

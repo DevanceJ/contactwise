@@ -37,3 +37,27 @@ export async function PUT(request: Request) {
     return new Response("Internal Server Error", { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  const session = await auth();
+
+  if (!session || !session.user.isAdmin) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+  const id = request.url.split("/").pop();
+  if (!id) {
+    return new Response("Tenant ID is required", { status: 400 });
+  }
+
+  try {
+    await db.tenant.delete({
+      where: {
+        id: id,
+      },
+    });
+
+    return new Response("Tenant deleted successfully");
+  } catch (error) {
+    return new Response("Internal Server Error", { status: 500 });
+  }
+}
