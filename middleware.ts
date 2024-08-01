@@ -14,10 +14,12 @@ const { auth } = NextAuth(authConfig);
 export default auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
+  const isAdmin = req.auth?.user.isAdmin;
 
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiPrefix);
   const isPublicRoute = publicRoute.includes(nextUrl.pathname);
   const isAuthRoute = authRoute.includes(nextUrl.pathname);
+  const isAdminRoute = nextUrl.pathname.startsWith(adminRoute);
 
   if (isApiAuthRoute) {
     return undefined;
@@ -32,6 +34,12 @@ export default auth((req) => {
 
   if (!isLoggedIn && !isPublicRoute) {
     return Response.redirect(new URL("/auth/login", nextUrl));
+  }
+
+  if (isAdminRoute) {
+    if (isAdmin) {
+      return new Response("Unauthorized", { status: 401 });
+    }
   }
 
   return undefined;

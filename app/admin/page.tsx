@@ -25,7 +25,7 @@ const AdminAccess = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`/api/users/all`);
+      const response = await axios.get(`/api/admin/users/all`);
       setUsers(response.data);
     } catch (error) {
       console.error("Failed to fetch users", error);
@@ -40,7 +40,7 @@ const AdminAccess = () => {
 
   const makeAdmin = async (userId: string) => {
     try {
-      await axios.put(`/api/users/${userId}/makeadmin`);
+      await axios.put(`/api/admin/users/promote/${userId}`);
       fetchUsers();
     } catch (error) {
       console.error("Failed to make user admin", error);

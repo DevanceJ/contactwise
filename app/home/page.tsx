@@ -69,8 +69,14 @@ const Home = () => {
   const fetchTenants = async () => {
     try {
       setLoadingTenants(true);
-      const response = await axios.get(`/api/tenants`);
-      setTenants(response.data);
+      if (user?.isAdmin) {
+        const response = await axios.get(`/api/admin/tenants`);
+        setTenants(response.data);
+      } else {
+        // todo: fetch tenants for regular users
+        const response = await axios.get(`/api/tenants?id=${user?.id}`);
+        setTenants(response.data);
+      }
     } catch (error) {
       console.error("Failed to fetch tenants", error);
     } finally {
@@ -83,8 +89,10 @@ const Home = () => {
       window.location.href = window.location.origin + "/home";
       console.log("reloading");
     }
-    fetchTenants();
-  }, [searchParam]);
+    if (user) {
+      fetchTenants();
+    }
+  }, [user]);
 
   const fetchMembers = async (tenantId: string) => {
     setLoading(true);
@@ -179,7 +187,7 @@ const Home = () => {
     if (tenantToDelete) {
       try {
         startTransition(async () => {
-          await axios.delete(`/api/tenants/${tenantToDelete.id}`);
+          await axios.delete(`/api/admin/tenants/${tenantToDelete.id}`);
           setTenants((prevTenants) =>
             prevTenants.filter((t) => t.id !== tenantToDelete.id)
           );

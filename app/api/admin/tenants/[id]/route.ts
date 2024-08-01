@@ -1,14 +1,7 @@
 import { db } from "@/lib/db";
-import { auth } from "@/auth";
-
 export const dynamic = "force-dynamic";
 
 export async function PUT(request: Request) {
-  const session = await auth();
-
-  if (!session || !session.user.isAdmin) {
-    return new Response("Unauthorized", { status: 401 });
-  }
   const id = request.url.split("/").pop();
   if (!id) {
     return new Response("Tenant ID is required", { status: 400 });
@@ -39,16 +32,10 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const session = await auth();
-
-  if (!session || !session.user.isAdmin) {
-    return new Response("Unauthorized", { status: 401 });
-  }
   const id = request.url.split("/").pop();
   if (!id) {
     return new Response("Tenant ID is required", { status: 400 });
   }
-
   try {
     await db.tenant.delete({
       where: {

@@ -1,14 +1,7 @@
 import { db } from "@/lib/db";
 export const dynamic = "force-dynamic";
-import { auth } from "@/auth";
 
 export async function GET(request: Request) {
-  const session = await auth();
-
-  if (!session || !session.user.isAdmin) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
   const { searchParams } = new URL(request.url);
   const tenantId = searchParams.get("tenantId");
 

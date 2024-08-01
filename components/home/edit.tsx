@@ -55,7 +55,7 @@ export const EditTenantDialog = ({
     setError(undefined);
     setSuccess(undefined);
     try {
-      await axios.put(`/api/tenants/${tenant.id}`, values);
+      await axios.put(`/api/admin/tenants/${tenant.id}`, values);
       onTenantUpdated({ ...tenant, ...values });
       setSuccess("Tenant updated successfully");
     } catch (error) {

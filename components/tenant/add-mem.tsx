@@ -66,7 +66,7 @@ export const MemberForm = () => {
     try {
       setLoadingUsers(true);
       const usersResponse = await axios.get(
-        `/api/users/verified?tenantId=${form.watch("tenantId")}`
+        `/api/admin/users/verified?tenantId=${form.watch("tenantId")}`
       );
       setUsers(usersResponse.data);
     } catch (error) {

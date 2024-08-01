@@ -1,15 +1,7 @@
 import { db } from "@/lib/db";
-import { auth } from "@/auth";
-
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
-  const session = await auth();
-
-  if (!session || !session.user) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
   const tenantId = request.url.split("/").pop();
 
   if (!tenantId) {
