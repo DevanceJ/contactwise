@@ -119,7 +119,9 @@ const Home = () => {
     if (memberToDelete) {
       try {
         startTransition(async () => {
-          await axios.delete(`/api/member/${memberToDelete.id}`);
+          await axios.delete(
+            `/api/tenants/${memberToDelete.tenantId}/remove-member/${memberToDelete.id}`
+          );
           setMembers((prevMembers) =>
             prevMembers.filter((member) => member.id !== memberToDelete.id)
           );
