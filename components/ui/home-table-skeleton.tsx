@@ -14,18 +14,18 @@ export function HomeTableSkeleton() {
       <tbody>
         {[...Array(5)].map((_, index) => (
           <tr key={index}>
-            <td className="border p-2">
-              <Skeleton className="h-4 w-3/4" />
+            <td className="border p-2 w-1/4">
+              <Skeleton className="h-6 w-3/4" />
             </td>
-            <td className="border p-2">
-              <Skeleton className="h-4 w-3/4" />
+            <td className="border p-2 w-2/4">
+              <Skeleton className="h-6 w-3/4" />
             </td>
-            <td className="border p-2">
-              <Skeleton className="h-4 w-1/2" />
+            <td className="border p-2 w-1/4">
+              <Skeleton className="h-6 w-1/2" />
             </td>
 
-            <td className="border p-2">
-              <Skeleton className="h-4 w-16" />
+            <td className="border p-2 w-1/4">
+              <Skeleton className="h-6 w-3/4" />
             </td>
           </tr>
         ))}

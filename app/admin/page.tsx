@@ -101,9 +101,15 @@ const AdminAccess = () => {
                 </thead>
                 <tbody>
                   {users.map((user) => (
-                    <tr key={user.id} className="">
-                      <td className="border p-2">{user.name}</td>
-                      <td className="border p-2">{user.email}</td>
+                    <tr key={user.id} className="hover:bg-gray-100">
+                      <td className="border capitalize p-2">{user.name}</td>
+                      <td className="border  p-2">
+                        <a
+                          className="cursor-pointer text-blue-800 hover:text-blue-400"
+                          href={`mailto:${user.email}`}>
+                          {user.email}
+                        </a>
+                      </td>
                       <td className="border p-2">
                         <AlertDialog>
                           <AlertDialogTrigger>

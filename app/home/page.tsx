@@ -368,9 +368,21 @@ const Home = () => {
                   </thead>
                   <tbody>
                     {members.map((member) => (
-                      <tr key={member.id}>
-                        <td className="border p-2">{member.user.name}</td>
-                        <td className="border p-2">{member.user.email}</td>
+                      <tr
+                        key={member.id}
+                        className="
+                      hover:bg-gray-100
+                      ">
+                        <td className="border capitalize p-2">
+                          {member.user.name}
+                        </td>
+                        <td className="border  p-2">
+                          <a
+                            className="cursor-pointer text-blue-800 hover:text-blue-400"
+                            href={`mailto:${member.user.email}`}>
+                            {member.user.email}
+                          </a>
+                        </td>
 
                         {user?.isAdmin ||
                         managers.some(
