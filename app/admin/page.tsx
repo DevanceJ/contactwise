@@ -107,10 +107,11 @@ const AdminAccess = () => {
                       <td className="border p-2">
                         <AlertDialog>
                           <AlertDialogTrigger>
-                            <div className="flex items-center space-x-2 cursor-pointer ">
-                              <EnterIcon fontWeight={600} />
-                              <span className="font-semibold">Make Admin</span>
-                            </div>
+                            <Button
+                              variant="outline"
+                              className="text-blue-600 hover:bg-blue-100">
+                              <span>Make Admin</span>
+                            </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>

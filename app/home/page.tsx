@@ -5,6 +5,7 @@ import {
   HamburgerMenuIcon,
   PersonIcon,
 } from "@radix-ui/react-icons";
+import RemoveAlert from "@/components/home/alert";
 import { Button } from "@/components/ui/button";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
@@ -18,12 +19,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Member, Prisma } from "@prisma/client";
+import { Prisma, Member } from "@prisma/client";
 import axios from "axios";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Edit, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -31,41 +29,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { TenantSchema } from "@/schema";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Tenant, Role } from "@prisma/client";
 import { useSearchParams } from "next/navigation";
 import { SideNavSkeleton } from "@/components/ui/skeleton-sidenav";
 import { HomeTableSkeleton } from "@/components/ui/home-table-skeleton";
+import { EditTenantDialog } from "@/components/home/edit";
 
 type MemberWithUser = Prisma.MemberGetPayload<{
   include: {
@@ -81,27 +49,22 @@ const Home = () => {
     null
   );
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | undefined>("");
-  const [success, setSuccess] = useState<string | undefined>("");
   const [managers, setManagers] = useState<MemberWithUser[]>([]);
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [loadingTenants, setLoadingTenants] = useState(true);
-  // const user = useCurrentUser();
+  const [deleteTenantDialogOpen, setDeleteTenantDialogOpen] = useState(false);
+  const [tenantToDelete, setTenantToDelete] = useState<Tenant | null>(null);
+  const [removeMemberDialogOpen, setRemoveMemberDialogOpen] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState<MemberWithUser | null>(
+    null
+  );
   const session = useSession();
   const status = session.status;
   const user = session.data?.user;
   const searchParam = useSearchParams();
-
-  const form = useForm<z.infer<typeof TenantSchema>>({
-    resolver: zodResolver(TenantSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-    },
-  });
 
   const fetchTenants = async () => {
     try {
@@ -139,39 +102,12 @@ const Home = () => {
     }
   };
 
-  const openModal = (tenant: Tenant) => {
-    setCurrentTenant(tenant);
-    form.reset({
-      name: tenant.name,
-      description: tenant.description || "",
-    });
-  };
-
-  const deleteTenant = async (tenant: Tenant) => {
-    try {
-      startTransition(async () => {
-        await axios.delete(`/api/tenants/${tenant.id}`);
-        setTenants((prevTenants) =>
-          prevTenants.filter((t) => t.id !== tenant.id)
-        );
-      });
-    } catch (error) {
-      console.error("Failed to delete tenant", error);
-    }
-  };
-
-  const onSubmit = async (values: z.infer<typeof TenantSchema>) => {
-    try {
-      await axios.put(`/api/tenants/${currentTenant?.id}`, values);
-      setTenants((prevTenants) =>
-        prevTenants.map((tenant) =>
-          tenant.id === currentTenant?.id ? { ...tenant, ...values } : tenant
-        )
-      );
-      setSuccess("Tenant updated successfully");
-    } catch (error) {
-      setError("Failed to update tenant");
-    }
+  const handleTenantUpdated = (updatedTenant: Tenant) => {
+    setTenants((prevTenants) =>
+      prevTenants.map((tenant) =>
+        tenant.id === updatedTenant.id ? updatedTenant : tenant
+      )
+    );
   };
 
   const handleTenantClick = (tenant: Tenant) => {
@@ -179,25 +115,31 @@ const Home = () => {
     fetchMembers(tenant.id);
   };
 
-  const handleRemoveMember = async (memberId: string, tenantId: string) => {
-    try {
-      startTransition(async () => {
-        await axios.delete(
-          `/api/tenants/${tenantId}/remove-member/${memberId}`
-        );
-        setMembers((prevMembers) =>
-          prevMembers.filter((member) => member.id !== memberId)
-        );
-      });
-    } catch (error) {
-      console.error("Failed to remove member", error);
+  const confirmMemberRemove = async (memberToDelete: Member) => {
+    if (memberToDelete) {
+      try {
+        startTransition(async () => {
+          await axios.delete(`/api/member/${memberToDelete.id}`);
+          setMembers((prevMembers) =>
+            prevMembers.filter((member) => member.id !== memberToDelete.id)
+          );
+        });
+      } catch (error) {
+        console.error("Failed to remove member", error);
+      }
     }
+    setRemoveMemberDialogOpen(false);
+    setMemberToDelete(null);
+  };
+  const cancelMemberRemove = () => {
+    setRemoveMemberDialogOpen(false);
+    setMemberToDelete(null);
   };
 
   const handleRoleChange = (member: MemberWithUser, role: string) => {
     setSelectedMember(member);
     setSelectedRole(role);
-    setIsDialogOpen(true);
+    setIsRoleDialogOpen(true);
   };
   const confirmRoleChange = async () => {
     if (selectedRole && selectedMember) {
@@ -223,18 +165,40 @@ const Home = () => {
     }
     setSelectedMember(null);
     setSelectedRole(null);
-    setIsDialogOpen(false);
+    setIsRoleDialogOpen(false);
   };
   const cancelRoleChange = () => {
     setSelectedMember(null);
     setSelectedRole(null);
-    setIsDialogOpen(false);
+    setIsRoleDialogOpen(false);
+  };
+
+  const confirmDeleteTenant = async () => {
+    if (tenantToDelete) {
+      try {
+        startTransition(async () => {
+          await axios.delete(`/api/tenants/${tenantToDelete.id}`);
+          setTenants((prevTenants) =>
+            prevTenants.filter((t) => t.id !== tenantToDelete.id)
+          );
+        });
+      } catch (error) {
+        console.error("Failed to delete tenant", error);
+      }
+    }
+    setDeleteTenantDialogOpen(false);
+    setTenantToDelete(null);
+  };
+
+  const cancelDeleteTenant = () => {
+    setDeleteTenantDialogOpen(false);
+    setTenantToDelete(null);
   };
 
   const toggleNav = () => {
     setSideNavOpen(!sideNavOpen);
   };
-  // md:grid-cols-[220px_1fr]
+
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       {/* Sidebar */}
@@ -260,91 +224,25 @@ const Home = () => {
                   <Button
                     onClick={() => handleTenantClick(tenant)}
                     variant="ghost"
-                    className="flex-1 text-muted-foreground hover:text-primary ">
+                    className="flex-1 text-black hover:text-primary ">
                     {tenant.name}
                   </Button>
                   {user?.isAdmin && (
                     <Button
                       disabled={isPending}
                       variant="ghost"
-                      onClick={() => deleteTenant(tenant)}>
-                      <Trash2 className="h-4 w-4" />
+                      onClick={() => {
+                        setDeleteTenantDialogOpen(true);
+                        setTenantToDelete(tenant);
+                      }}>
+                      <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                   )}
-
                   {user?.isAdmin && (
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          onClick={() => openModal(tenant)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-[425px]">
-                        <DialogHeader>
-                          <DialogTitle>Edit Organization</DialogTitle>
-                          <DialogDescription>
-                            Make changes to the organization details here. Click
-                            save when you&apos;re done.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <Form {...form}>
-                          <form
-                            onSubmit={form.handleSubmit(onSubmit)}
-                            className="space-y-6">
-                            <div className="space-y-4">
-                              <FormField
-                                control={form.control}
-                                name="name"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Name</FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        {...field}
-                                        disabled={form.formState.isSubmitting}
-                                        placeholder="HR Tenant"
-                                        type="text"
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={form.control}
-                                name="description"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Description</FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        {...field}
-                                        disabled={form.formState.isSubmitting}
-                                        placeholder="This tenant is for the HR Team"
-                                        type="text"
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-                            {/* <FormErr message={error} /> */}
-                            {/* <FormSuc message={success} /> */}
-                            <DialogFooter>
-                              <Button
-                                disabled={form.formState.isSubmitting}
-                                type="submit"
-                                className="w-full">
-                                Save changes
-                              </Button>
-                            </DialogFooter>
-                          </form>
-                        </Form>
-                      </DialogContent>
-                    </Dialog>
+                    <EditTenantDialog
+                      tenant={tenant}
+                      onTenantUpdated={handleTenantUpdated}
+                    />
                   )}
                 </div>
               ))}
@@ -377,78 +275,18 @@ const Home = () => {
                   <Button
                     disabled={isPending}
                     variant="ghost"
-                    onClick={() => deleteTenant(tenant)}>
-                    <Trash2 className="h-4 w-4" />
+                    onClick={() => {
+                      setDeleteTenantDialogOpen(true);
+                      setTenantToDelete(tenant);
+                    }}>
+                    <Trash2 className="h-4 w-4 text-red-500" />
                   </Button>
                 )}
                 {user?.isAdmin && (
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="ghost" onClick={() => openModal(tenant)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-60 sm:max-w-[425px]">
-                      <DialogHeader>
-                        <DialogTitle>Edit Organization</DialogTitle>
-                        <DialogDescription>
-                          Make changes to the organization details here. Click
-                          save when you&apos;re done.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <Form {...form}>
-                        <form
-                          onSubmit={form.handleSubmit(onSubmit)}
-                          className="space-y-6">
-                          <div className="space-y-4">
-                            <FormField
-                              control={form.control}
-                              name="name"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Name</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      disabled={form.formState.isSubmitting}
-                                      placeholder="HR Tenant"
-                                      type="text"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="description"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Description</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      disabled={form.formState.isSubmitting}
-                                      placeholder="HR Tenant for HR team"
-                                      type="text"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                          <DialogFooter>
-                            <Button
-                              type="submit"
-                              disabled={form.formState.isSubmitting}>
-                              Save changes
-                            </Button>
-                          </DialogFooter>
-                        </form>
-                      </Form>
-                    </DialogContent>
-                  </Dialog>
+                  <EditTenantDialog
+                    tenant={tenant}
+                    onTenantUpdated={handleTenantUpdated}
+                  />
                 )}
               </div>
             ))}
@@ -464,17 +302,17 @@ const Home = () => {
               <div className="space-x-2 md:space-x-6">
                 <Link href="/manage">
                   <span className="text-xs md:text-base font-medium text-gray-700 hover:text-black ">
-                    Manage
+                    Tenant Members
                   </span>
                 </Link>
                 <Link href="/add">
                   <span className="text-xs md:text-base font-medium text-gray-700 hover:text-black ">
-                    New Tenant
+                    Create Tenant
                   </span>
                 </Link>
                 <Link href="/admin">
                   <span className="text-xs md:text-base font-medium text-gray-700 hover:text-black">
-                    Admin
+                    Promote User
                   </span>
                 </Link>
               </div>
@@ -506,7 +344,9 @@ const Home = () => {
           </DropdownMenu>
         </header>
         <main className="flex-1 p-4 lg:p-6">
-          <h1 className="text-lg font-semibold md:text-2xl mb-4">Members</h1>
+          <h1 className="text-lg font-semibold md:text-2xl mb-4">
+            {currentTenant?.name}
+          </h1>
           <div className="rounded-lg border shadow-sm">
             <div className="overflow-x-auto">
               {loading ? (
@@ -544,21 +384,10 @@ const Home = () => {
                               <SelectTrigger className="w-[180px]">
                                 <SelectValue placeholder={member.role} />
                               </SelectTrigger>
-                              {member.role === "MANAGER" ? (
-                                <SelectContent>
-                                  <SelectItem value="MANAGER">
-                                    MANAGER
-                                  </SelectItem>
-                                  <SelectItem value="USER">USER</SelectItem>
-                                </SelectContent>
-                              ) : (
-                                <SelectContent>
-                                  <SelectItem value="USER">USER</SelectItem>
-                                  <SelectItem value="MANAGER">
-                                    MANAGER
-                                  </SelectItem>
-                                </SelectContent>
-                              )}
+                              <SelectContent>
+                                <SelectItem value="USER">User</SelectItem>
+                                <SelectItem value="MANAGER">Manager</SelectItem>
+                              </SelectContent>
                             </Select>
                           </td>
                         ) : (
@@ -573,8 +402,14 @@ const Home = () => {
                             <Button
                               disabled={isPending}
                               variant="outline"
+                              // write tailwindcss for remove button
+                              className="text-red-600 hover:bg-red-100"
                               onClick={() =>
-                                handleRemoveMember(member.id, member.tenantId)
+                                // handleRemoveMember(member.id, member.tenantId)
+                                {
+                                  setRemoveMemberDialogOpen(true);
+                                  setMemberToDelete(member);
+                                }
                               }>
                               Remove
                             </Button>
@@ -592,25 +427,34 @@ const Home = () => {
             </div>
           </div>
           {selectedMember && (
-            <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to change the role of{" "}
-                    {selectedMember.user.name} to {selectedRole}?
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel onClick={cancelRoleChange}>
-                    Cancel
-                  </AlertDialogCancel>
-                  <AlertDialogAction onClick={confirmRoleChange}>
-                    Confirm
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <RemoveAlert
+              open={isRoleDialogOpen}
+              onOpenChange={setIsRoleDialogOpen}
+              title="Are you absolutely sure?"
+              description={`Are you sure you want to change the role of ${selectedMember.user.name} to ${selectedRole}?`}
+              onConfirm={confirmRoleChange}
+              onCancel={cancelRoleChange}
+            />
+          )}
+          {tenantToDelete && (
+            <RemoveAlert
+              open={deleteTenantDialogOpen}
+              onOpenChange={setDeleteTenantDialogOpen}
+              title="Are you absolutely sure?"
+              description={`Are you sure you want to delete ${tenantToDelete.name}?`}
+              onConfirm={confirmDeleteTenant}
+              onCancel={cancelDeleteTenant}
+            />
+          )}
+          {memberToDelete && (
+            <RemoveAlert
+              open={removeMemberDialogOpen}
+              onOpenChange={setRemoveMemberDialogOpen}
+              title="Are you absolutely sure?"
+              description={`Are you sure you want to remove ${memberToDelete.user.name} from the organization?`}
+              onConfirm={() => confirmMemberRemove(memberToDelete)}
+              onCancel={cancelMemberRemove}
+            />
           )}
         </main>
       </div>
