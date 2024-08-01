@@ -12,8 +12,8 @@ export async function GET(request: Request) {
   try {
     const usersAskingAccess = await db.user.findMany({
       where: {
-        requestedAdminAccess: {
-          equals: true,
+        emailVerified: {
+          not: null,
         },
         isAdmin: {
           equals: false,

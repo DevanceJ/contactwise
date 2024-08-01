@@ -1,4 +1,4 @@
-import { Login } from "@/components/auth/login";
+"use client";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
@@ -9,9 +9,11 @@ export default function Home() {
         <p className="text-center">Noch is a user management application.</p>
         <p className="text-center">To get started, sign in.</p>
         <div className="flex justify-center">
-          <Login>
-            <Button className="text-lg">Sign In</Button>
-          </Login>
+          <Button
+            onClick={() => window.location.replace("/auth/login")}
+            className="text-lg">
+            Sign In
+          </Button>
         </div>
       </div>
     </main>

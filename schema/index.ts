@@ -19,7 +19,6 @@ export const RegisterSchema = z.object({
   name: z.string().min(1, {
     message: "Please enter your name",
   }),
-  requestAdminAccess: z.boolean().default(false).optional(),
 });
 
 export const TenantSchema = z.object({

@@ -24,7 +24,7 @@ const AdminAccess = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`/api/users/requestedaccess`);
+      const response = await axios.get(`/api/users/all`);
       setUsers(response.data);
     } catch (error) {
       console.error("Failed to fetch users", error);

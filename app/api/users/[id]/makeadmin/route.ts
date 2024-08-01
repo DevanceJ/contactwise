@@ -15,7 +15,7 @@ export async function PUT(req: Request) {
 
     await db.user.update({
       where: { id: userId },
-      data: { isAdmin: true, requestedAdminAccess: false },
+      data: { isAdmin: true },
     });
 
     return new Response("Role changed", { status: 200 });
