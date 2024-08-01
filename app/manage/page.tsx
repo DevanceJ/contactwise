@@ -1,11 +1,11 @@
 "use client";
 import { RoleGate } from "@/components/auth/role-gate";
-import { AddUserForm } from "@/components/tenant/add-member";
+import { MemberForm } from "@/components/tenant/add-mem";
 
 const ManagePage = () => {
   return (
     <RoleGate>
-      <AddUserForm />
+      <MemberForm />
     </RoleGate>
   );
 };

@@ -65,7 +65,6 @@ import {
 import { Tenant, Role } from "@prisma/client";
 import { useSearchParams } from "next/navigation";
 import { SideNavSkeleton } from "@/components/ui/skeleton-sidenav";
-import { LoadingSpinner } from "@/components/ui/spinner";
 import { HomeTableSkeleton } from "@/components/ui/home-table-skeleton";
 
 type MemberWithUser = Prisma.MemberGetPayload<{
