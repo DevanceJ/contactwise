@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { EnterIcon } from "@radix-ui/react-icons";
 import axios from "axios";
@@ -62,7 +63,33 @@ const AdminAccess = () => {
         <div className="rounded-lg border shadow-sm bg-white">
           <div className="overflow-x-auto">
             {loading ? (
-              <p className="text-center p-4">Loading...</p>
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="border p-2 text-left">Name</th>
+                    <th className="border p-2 text-left">Email</th>
+                    <th className="border p-2 text-left">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...Array(5)].map((_, index) => (
+                    <tr key={index} className="">
+                      <td className="border p-2">
+                        <Skeleton className="h-4 w-3/4" />{" "}
+                        {/* Skeleton for user name */}
+                      </td>
+                      <td className="border p-2">
+                        <Skeleton className="h-4 w-3/4" />{" "}
+                        {/* Skeleton for user email */}
+                      </td>
+                      <td className="border p-2">
+                        <Skeleton className="h-4 w-12" />{" "}
+                        {/* Skeleton for action button */}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             ) : (
               <table className="w-full border-collapse">
                 <thead>

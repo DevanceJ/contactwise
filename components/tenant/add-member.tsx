@@ -26,6 +26,7 @@ import { useTransition, useState } from "react";
 import { Tenant, User } from "@prisma/client";
 import axios from "axios";
 import { useEffect } from "react";
+import { LoadingSpinner } from "@/components/ui/spinner";
 
 export const AddUserForm = () => {
   const form = useForm<z.infer<typeof AddUserSchema>>({
@@ -40,16 +41,21 @@ export const AddUserForm = () => {
   const [isPending, startTransition] = useTransition();
   const [users, setUsers] = useState<User[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [loadingTenants, setLoadingTenants] = useState(true);
+  const [loadingUsers, setLoadingUsers] = useState(false);
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
 
   useEffect(() => {
     const fetchTenants = async () => {
       try {
+        setLoadingTenants(true);
         const tenantsResponse = await axios.get("/api/tenants");
         setTenants(tenantsResponse.data);
       } catch (error) {
         console.error("Failed to fetch tenants", error);
+      } finally {
+        setLoadingTenants(false);
       }
     };
 
@@ -61,16 +67,21 @@ export const AddUserForm = () => {
     if (tenantId) {
       const fetchUsers = async () => {
         try {
+          setLoadingUsers(true);
           const usersResponse = await axios.get(
             `/api/users/verified?tenantId=${tenantId}`
           );
           setUsers(usersResponse.data);
         } catch (error) {
           console.error("Failed to fetch users", error);
+        } finally {
+          setLoadingUsers(false);
         }
       };
 
       fetchUsers();
+    } else {
+      setUsers([]);
     }
   }, [form, form.watch("tenantId")]);
 
@@ -105,11 +116,14 @@ export const AddUserForm = () => {
                     <FormLabel>Tenant</FormLabel>
                     <FormControl>
                       <Select
-                        disabled={isPending}
+                        disabled={isPending || loadingTenants}
                         onValueChange={field.onChange}
                         defaultValue={field.value}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a tenant" />
+                          {loadingTenants && (
+                            <LoadingSpinner className="mr-4" />
+                          )}
                         </SelectTrigger>
                         <SelectContent>
                           {tenants.map((tenant) => (
@@ -134,11 +148,12 @@ export const AddUserForm = () => {
                     <FormLabel>Description</FormLabel>
                     <FormControl>
                       <Select
-                        disabled={isPending}
+                        disabled={isPending || loadingUsers}
                         onValueChange={field.onChange}
                         defaultValue={field.value}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a user" />
+                          {loadingUsers && <LoadingSpinner />}
                         </SelectTrigger>
                         <SelectContent>
                           {users.map((user) => (

@@ -7,8 +7,9 @@ import {
 } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
 import { signOut } from "next-auth/react";
-import { useCurrentUser } from "@/hooks/use-current-user";
+import { useSession } from "next-auth/react";
 import { useEffect, useState, useTransition } from "react";
+import { NavSkeleton } from "@/components/ui/skeleton-home";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,6 +64,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tenant, Role } from "@prisma/client";
 import { useSearchParams } from "next/navigation";
+import { SideNavSkeleton } from "@/components/ui/skeleton-sidenav";
+import { LoadingSpinner } from "@/components/ui/spinner";
+import { HomeTableSkeleton } from "@/components/ui/home-table-skeleton";
 
 type MemberWithUser = Prisma.MemberGetPayload<{
   include: {
@@ -85,7 +89,11 @@ const Home = () => {
   const [managers, setManagers] = useState<MemberWithUser[]>([]);
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const user = useCurrentUser();
+  const [loadingTenants, setLoadingTenants] = useState(true);
+  // const user = useCurrentUser();
+  const session = useSession();
+  const status = session.status;
+  const user = session.data?.user;
   const searchParam = useSearchParams();
 
   const form = useForm<z.infer<typeof TenantSchema>>({
@@ -98,10 +106,13 @@ const Home = () => {
 
   const fetchTenants = async () => {
     try {
+      setLoadingTenants(true);
       const response = await axios.get(`/api/tenants`);
       setTenants(response.data);
     } catch (error) {
       console.error("Failed to fetch tenants", error);
+    } finally {
+      setLoadingTenants(false);
     }
   };
   useEffect(() => {
@@ -237,106 +248,114 @@ const Home = () => {
               Noch
             </Link>
           </div>
-          <nav className="flex-1 px-2 lg:px-4">
-            <h3 className="text-xl font-semibold text-center mb-4">Tenants</h3>
-            {tenants.map((tenant) => (
-              <div
-                key={tenant.id}
-                className="mb-4 flex items-center justify-between">
-                <Button
-                  onClick={() => handleTenantClick(tenant)}
-                  variant="ghost"
-                  className="flex-1 text-muted-foreground hover:text-primary ">
-                  {tenant.name}
-                </Button>
-                {user?.isAdmin && (
+          {status === "loading" && loadingTenants && <NavSkeleton />}
+          {status === "authenticated" && (
+            <nav className="flex-1 px-2 lg:px-4">
+              <h3 className="text-xl font-semibold text-center mb-4">
+                Tenants
+              </h3>
+              {tenants.map((tenant) => (
+                <div
+                  key={tenant.id}
+                  className="mb-4 flex items-center justify-between">
                   <Button
-                    disabled={isPending}
+                    onClick={() => handleTenantClick(tenant)}
                     variant="ghost"
-                    onClick={() => deleteTenant(tenant)}>
-                    <Trash2 className="h-4 w-4" />
+                    className="flex-1 text-muted-foreground hover:text-primary ">
+                    {tenant.name}
                   </Button>
-                )}
+                  {user?.isAdmin && (
+                    <Button
+                      disabled={isPending}
+                      variant="ghost"
+                      onClick={() => deleteTenant(tenant)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
 
-                {user?.isAdmin && (
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="ghost" onClick={() => openModal(tenant)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                      <DialogHeader>
-                        <DialogTitle>Edit Organization</DialogTitle>
-                        <DialogDescription>
-                          Make changes to the organization details here. Click
-                          save when you&apos;re done.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <Form {...form}>
-                        <form
-                          onSubmit={form.handleSubmit(onSubmit)}
-                          className="space-y-6">
-                          <div className="space-y-4">
-                            <FormField
-                              control={form.control}
-                              name="name"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Name</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      disabled={form.formState.isSubmitting}
-                                      placeholder="HR Tenant"
-                                      type="text"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="description"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Description</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      {...field}
-                                      disabled={form.formState.isSubmitting}
-                                      placeholder="This tenant is for the HR Team"
-                                      type="text"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                          {/* <FormErr message={error} /> */}
-                          {/* <FormSuc message={success} /> */}
-                          <DialogFooter>
-                            <Button
-                              disabled={form.formState.isSubmitting}
-                              type="submit"
-                              className="w-full">
-                              Save changes
-                            </Button>
-                          </DialogFooter>
-                        </form>
-                      </Form>
-                    </DialogContent>
-                  </Dialog>
-                )}
-              </div>
-            ))}
-          </nav>
+                  {user?.isAdmin && (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          onClick={() => openModal(tenant)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>Edit Organization</DialogTitle>
+                          <DialogDescription>
+                            Make changes to the organization details here. Click
+                            save when you&apos;re done.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <Form {...form}>
+                          <form
+                            onSubmit={form.handleSubmit(onSubmit)}
+                            className="space-y-6">
+                            <div className="space-y-4">
+                              <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Name</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        {...field}
+                                        disabled={form.formState.isSubmitting}
+                                        placeholder="HR Tenant"
+                                        type="text"
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name="description"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Description</FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        {...field}
+                                        disabled={form.formState.isSubmitting}
+                                        placeholder="This tenant is for the HR Team"
+                                        type="text"
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            {/* <FormErr message={error} /> */}
+                            {/* <FormSuc message={success} /> */}
+                            <DialogFooter>
+                              <Button
+                                disabled={form.formState.isSubmitting}
+                                type="submit"
+                                className="w-full">
+                                Save changes
+                              </Button>
+                            </DialogFooter>
+                          </form>
+                        </Form>
+                      </DialogContent>
+                    </Dialog>
+                  )}
+                </div>
+              ))}
+            </nav>
+          )}
         </div>
       </div>
 
-      {sideNavOpen && (
+      {sideNavOpen && status === "loading" && <SideNavSkeleton />}
+      {sideNavOpen && status === "authenticated" && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-50 md:hidden">
           <div className="absolute inset-y-0 left-0 w-64 bg-white shadow-lg p-4">
             <div className="flex justify-between items-center mb-4">
@@ -368,11 +387,6 @@ const Home = () => {
                     <DialogTrigger asChild>
                       <Button variant="ghost" onClick={() => openModal(tenant)}>
                         <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        onClick={() => deleteTenant(tenant)}>
-                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-60 sm:max-w-[425px]">
@@ -497,7 +511,7 @@ const Home = () => {
           <div className="rounded-lg border shadow-sm">
             <div className="overflow-x-auto">
               {loading ? (
-                <p className="text-center p-4">Loading...</p>
+                <HomeTableSkeleton />
               ) : currentTenant ? (
                 <table className="w-full border-collapse">
                   <thead>
