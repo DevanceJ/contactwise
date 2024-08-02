@@ -49,7 +49,7 @@ export const MemberForm = () => {
   const fetchTenants = async () => {
     try {
       setLoadingTenants(true);
-      const tenantsResponse = await axios.get("/api/tenants");
+      const tenantsResponse = await axios.get("/api/admin/tenants");
       setTenants(tenantsResponse.data);
     } catch (error) {
       console.error("Failed to fetch tenants", error);
