@@ -3,7 +3,6 @@
 import * as z from "zod";
 import { TenantSchema } from "@/schema";
 import { db } from "@/lib/db";
-import { getUserById } from "@/data/user";
 import { auth } from "@/auth";
 
 export const createTenant = async (values: z.infer<typeof TenantSchema>) => {

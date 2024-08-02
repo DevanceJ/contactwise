@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import authConfig from "@/auth.config";
+import { auth as getSession } from "@/auth";
 
 import {
   authRoute,
@@ -11,10 +12,11 @@ import {
 
 const { auth } = NextAuth(authConfig);
 
-export default auth((req) => {
+export default auth(async (req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
-  const isAdmin = req.auth?.user.isAdmin;
+  const session = await getSession();
+  const isAdmin = session?.user.isAdmin;
 
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiPrefix);
   const isPublicRoute = publicRoute.includes(nextUrl.pathname);
@@ -37,7 +39,7 @@ export default auth((req) => {
   }
 
   if (isAdminRoute) {
-    if (isAdmin) {
+    if (!isAdmin) {
       return new Response("Unauthorized", { status: 401 });
     }
   }
