@@ -4,7 +4,12 @@ import { RoleGate } from "@/components/auth/role-gate";
 const Admin = () => {
   return (
     <RoleGate>
+
+
       <TenantForm />
+
+
+      
     </RoleGate>
   );
 };
