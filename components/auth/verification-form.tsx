@@ -33,7 +33,8 @@ export const VerifyForm = () => {
     <CardWrapper
       headerLabel="Verifying..."
       backButtonHref="/auth/login"
-      backButtonLabel="Back to login">
+      backButtonLabel="Back to login"
+    >
       <div className="flex w-full items-center justify-center">
         {!error && !success && <LoadingSpinner />}
         <FormSuc message={success} />

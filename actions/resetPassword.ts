@@ -8,7 +8,7 @@ import * as z from "zod";
 import { generatePasswordResetToken } from "@/lib/token";
 
 export const resetPassword = async (
-  values: z.infer<typeof ResetPasswordSchema>
+  values: z.infer<typeof ResetPasswordSchema>,
 ) => {
   const validatedFields = ResetPasswordSchema.safeParse(values);
 

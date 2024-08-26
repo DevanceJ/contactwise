@@ -13,7 +13,8 @@ export function SideNavSkeleton() {
           {[...Array(4)].map((_, index) => (
             <div
               key={index}
-              className="flex items-center justify-between gap-2 mb-4">
+              className="flex items-center justify-between gap-2 mb-4"
+            >
               <Skeleton className="h-6 w-1/2 flex-1" />{" "}
               {/* Skeleton for tenant name */}
               <Skeleton className="h-6 w-6" /> <Skeleton className="h-6 w-6" />{" "}

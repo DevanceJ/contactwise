@@ -49,7 +49,8 @@ export const TenantForm = () => {
     <CardWrapper
       headerLabel="Create Tenant"
       backButtonHref="/home"
-      backButtonLabel="Back to Home">
+      backButtonLabel="Back to Home"
+    >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className=" space-y-6">
           <div className=" space-y-4">

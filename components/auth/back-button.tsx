@@ -11,7 +11,8 @@ export const BackButton = ({ label, href }: BackButtonProps) => {
       variant={"link"}
       className={" mx-auto font-normal"}
       size={"sm"}
-      asChild>
+      asChild
+    >
       <Link href={href}>{label}</Link>
     </Button>
   );

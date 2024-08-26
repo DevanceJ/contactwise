@@ -66,7 +66,7 @@ export const MemberForm = () => {
     try {
       setLoadingUsers(true);
       const usersResponse = await axios.get(
-        `/api/admin/users/verified?tenantId=${form.watch("tenantId")}`
+        `/api/admin/users/verified?tenantId=${form.watch("tenantId")}`,
       );
       setUsers(usersResponse.data);
     } catch (error) {
@@ -100,7 +100,8 @@ export const MemberForm = () => {
     <CardWrapper
       headerLabel="Add Member"
       backButtonLabel="Back to Home"
-      backButtonHref="/home">
+      backButtonHref="/home"
+    >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className=" space-y-6">
           <div className=" space-y-4">
@@ -117,7 +118,8 @@ export const MemberForm = () => {
                         defaultValue={field.value}
                         onValueChange={(value) => {
                           field.onChange(value);
-                        }}>
+                        }}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select Tenant"></SelectValue>
                           {loadingTenants && (
@@ -152,7 +154,8 @@ export const MemberForm = () => {
                         defaultValue={field.value}
                         onValueChange={(value) => {
                           field.onChange(value);
-                        }}>
+                        }}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select User"></SelectValue>
                           {loadingUsers && <LoadingSpinner className="mr-4" />}
@@ -190,7 +193,8 @@ export const MemberForm = () => {
                         defaultValue={field.value}
                         onValueChange={(value) => {
                           field.onChange(value);
-                        }}>
+                        }}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select a role"></SelectValue>
                         </SelectTrigger>

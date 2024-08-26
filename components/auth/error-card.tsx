@@ -6,7 +6,8 @@ export const ErrorCard = () => {
     <CardWrapper
       headerLabel="Something went wrong"
       backButtonHref="/auth/login"
-      backButtonLabel="Back to Login">
+      backButtonLabel="Back to Login"
+    >
       <div className="flex w-full items-center justify-center">
         <ExclamationTriangleIcon />{" "}
         <span className="ml-2">An error occurred</span>

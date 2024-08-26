@@ -5,6 +5,7 @@ A comprehensive user management application built with **Next.js**, **NextAuth.j
 ## Features
 
 ### 1. User Authentication
+
 - **Registration:** Users can register with their email address. Email verification is required.
 - **Login:** Users can log in using their email and password.
 - **Social Authentication:** Users can log in using Google.
@@ -13,21 +14,25 @@ A comprehensive user management application built with **Next.js**, **NextAuth.j
 - **Reset Process:** Users can reset their password after clicking the reset link.
 
 ### 2. Tenant Management
+
 - **Tenant Association:** Users can be associated with one or more tenants (organizations).
 - **Admin Controls:** Administrators can create, edit, and delete tenants.
 
 ### 3. Role-Based Access Control (RBAC)
+
 - **Roles:** Defines roles such as admin, manager, and user with varying access levels.
 - **Role Assignment:** Roles can be assigned to users within a tenant.
 - **Access Restrictions:** Access to different parts of the application is controlled based on user roles and permissions.
 
 ## Idea
+
 - **Role Assignment:** The "admin" role is assigned to specific users, while the "manager" and "user" roles are specific to individual tenants.
 - **Administrative Privileges:** Admins have the ability to create and update tenants. They can also add or remove users from tenants and assign or modify their roles as manager or user. Only an admin can elevate another user to the admin role.
 - **Managerial Privileges:** Within a tenant, managers can remove users and modify their roles.
 - **Tenant Visibility:** Admins can view all tenants in the database, regardless of their ownership. Users and managers, on the other hand, can only view tenants to which they are associated.
 
 ## Technologies Used
+
 - **Next.js:** React framework for building the frontend.
 - **NextAuth.js:** Authentication library for Next.js.
 - **Prisma ORM:** Type-safe database client.
@@ -47,9 +52,14 @@ A comprehensive user management application built with **Next.js**, **NextAuth.j
    cd contactwise
    npm i
    npm run dev
+   ```
 2. **Environment Variables:**
-- *.env* file shared already.
+
+- _.env_ file shared already.
+
 3. **Build:**
-  ```bash
-  npm run build
-  npm start
+
+```bash
+npm run build
+npm start
+```

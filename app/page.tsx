@@ -11,7 +11,8 @@ export default function Home() {
         <div className="flex justify-center">
           <Button
             onClick={() => window.location.replace("/auth/login")}
-            className="text-lg">
+            className="text-lg"
+          >
             Sign In
           </Button>
         </div>

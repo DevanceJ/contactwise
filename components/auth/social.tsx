@@ -13,7 +13,8 @@ export const Social = () => {
         variant="outline"
         size="lg"
         className="w-full"
-        onClick={() => onClick("google")}>
+        onClick={() => onClick("google")}
+      >
         <FcGoogle className="h-5 w-5" />
       </Button>
     </div>

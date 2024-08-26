@@ -46,7 +46,7 @@ const Home = () => {
   const [currentTenant, setCurrentTenant] = useState<Tenant | null>(null);
   const [members, setMembers] = useState<MemberWithUser[]>([]);
   const [selectedMember, setSelectedMember] = useState<MemberWithUser | null>(
-    null
+    null,
   );
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
@@ -59,7 +59,7 @@ const Home = () => {
   const [tenantToDelete, setTenantToDelete] = useState<Tenant | null>(null);
   const [removeMemberDialogOpen, setRemoveMemberDialogOpen] = useState(false);
   const [memberToDelete, setMemberToDelete] = useState<MemberWithUser | null>(
-    null
+    null,
   );
   const session = useSession();
   const status = session.status;
@@ -100,7 +100,7 @@ const Home = () => {
       const response = await axios.get(`/api/tenants/members/${tenantId}`);
       setMembers(response.data);
       const managers = response.data.filter(
-        (member: MemberWithUser) => member.role === "MANAGER"
+        (member: MemberWithUser) => member.role === "MANAGER",
       );
       setManagers(managers);
     } catch (error) {
@@ -113,8 +113,8 @@ const Home = () => {
   const handleTenantUpdated = (updatedTenant: Tenant) => {
     setTenants((prevTenants) =>
       prevTenants.map((tenant) =>
-        tenant.id === updatedTenant.id ? updatedTenant : tenant
-      )
+        tenant.id === updatedTenant.id ? updatedTenant : tenant,
+      ),
     );
   };
 
@@ -128,10 +128,10 @@ const Home = () => {
       try {
         startTransition(async () => {
           await axios.delete(
-            `/api/tenants/${memberToDelete.tenantId}/remove-member/${memberToDelete.id}`
+            `/api/tenants/${memberToDelete.tenantId}/remove-member/${memberToDelete.id}`,
           );
           setMembers((prevMembers) =>
-            prevMembers.filter((member) => member.id !== memberToDelete.id)
+            prevMembers.filter((member) => member.id !== memberToDelete.id),
           );
         });
       } catch (error) {
@@ -159,14 +159,14 @@ const Home = () => {
             `/api/tenants/${selectedMember.tenantId}/changerole/${selectedMember.id}`,
             {
               role: selectedRole,
-            }
+            },
           );
           setMembers((prevMembers) =>
             prevMembers.map((m) =>
               m.id === selectedMember.id
                 ? { ...m, role: selectedRole as Role }
-                : m
-            )
+                : m,
+            ),
           );
         });
       } catch (error) {
@@ -189,7 +189,7 @@ const Home = () => {
         startTransition(async () => {
           await axios.delete(`/api/admin/tenants/${tenantToDelete.id}`);
           setTenants((prevTenants) =>
-            prevTenants.filter((t) => t.id !== tenantToDelete.id)
+            prevTenants.filter((t) => t.id !== tenantToDelete.id),
           );
         });
       } catch (error) {
@@ -217,7 +217,8 @@ const Home = () => {
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <Link
               href="/"
-              className="flex items-center gap-2 font-semibold text-2xl">
+              className="flex items-center gap-2 font-semibold text-2xl"
+            >
               Noch
             </Link>
           </div>
@@ -230,11 +231,13 @@ const Home = () => {
               {tenants.map((tenant) => (
                 <div
                   key={tenant.id}
-                  className="mb-4 flex items-center justify-between">
+                  className="mb-4 flex items-center justify-between"
+                >
                   <Button
                     onClick={() => handleTenantClick(tenant)}
                     variant="ghost"
-                    className="flex-1 text-black hover:text-primary ">
+                    className="flex-1 text-black hover:text-primary "
+                  >
                     {tenant.name}
                   </Button>
                   {user?.isAdmin && (
@@ -244,7 +247,8 @@ const Home = () => {
                       onClick={() => {
                         setDeleteTenantDialogOpen(true);
                         setTenantToDelete(tenant);
-                      }}>
+                      }}
+                    >
                       <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                   )}
@@ -274,11 +278,13 @@ const Home = () => {
             {tenants.map((tenant) => (
               <div
                 key={tenant.id}
-                className="mb-4 flex items-center justify-between">
+                className="mb-4 flex items-center justify-between"
+              >
                 <Button
                   onClick={() => handleTenantClick(tenant)}
                   variant="ghost"
-                  className="flex-1 text-muted-foreground hover:text-primary">
+                  className="flex-1 text-muted-foreground hover:text-primary"
+                >
                   {tenant.name}
                 </Button>
                 {user?.isAdmin && (
@@ -288,7 +294,8 @@ const Home = () => {
                     onClick={() => {
                       setDeleteTenantDialogOpen(true);
                       setTenantToDelete(tenant);
-                    }}>
+                    }}
+                  >
                     <Trash2 className="h-4 w-4 text-red-500" />
                   </Button>
                 )}
@@ -332,7 +339,8 @@ const Home = () => {
             variant="ghost"
             className="md:hidden"
             onClick={toggleNav}
-            aria-label="Toggle side navigation">
+            aria-label="Toggle side navigation"
+          >
             {sideNavOpen ? <Cross2Icon /> : <HamburgerMenuIcon />}
           </Button>
           <DropdownMenu>
@@ -370,7 +378,7 @@ const Home = () => {
                       <th className="border p-2 text-left">Role</th>
                       {(user?.isAdmin ||
                         managers.some(
-                          (manager) => manager.userId === user?.id
+                          (manager) => manager.userId === user?.id,
                         )) && <th className="border p-2 text-left">Actions</th>}
                     </tr>
                   </thead>
@@ -380,21 +388,23 @@ const Home = () => {
                         key={member.id}
                         className="
                       hover:bg-gray-100
-                      ">
+                      "
+                      >
                         <td className="border capitalize p-2">
                           {member.user.name}
                         </td>
                         <td className="border  p-2">
                           <a
                             className="cursor-pointer text-blue-800 hover:text-blue-400"
-                            href={`mailto:${member.user.email}`}>
+                            href={`mailto:${member.user.email}`}
+                          >
                             {member.user.email}
                           </a>
                         </td>
 
                         {user?.isAdmin ||
                         managers.some(
-                          (manager) => manager.userId === user?.id
+                          (manager) => manager.userId === user?.id,
                         ) ? (
                           <td className="border p-2">
                             <Select
@@ -402,7 +412,8 @@ const Home = () => {
                               disabled={isPending}
                               onValueChange={(role) =>
                                 handleRoleChange(member, role)
-                              }>
+                              }
+                            >
                               <SelectTrigger className="w-[180px]">
                                 <SelectValue placeholder={member.role} />
                               </SelectTrigger>
@@ -417,7 +428,7 @@ const Home = () => {
                         )}
                         {(user?.isAdmin ||
                           (managers.some(
-                            (manager) => manager.userId === user?.id
+                            (manager) => manager.userId === user?.id,
                           ) &&
                             !member.user.isAdmin)) && (
                           <td className="border p-2">
@@ -432,7 +443,8 @@ const Home = () => {
                                   setRemoveMemberDialogOpen(true);
                                   setMemberToDelete(member);
                                 }
-                              }>
+                              }
+                            >
                               Remove
                             </Button>
                           </td>

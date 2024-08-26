@@ -54,7 +54,8 @@ const AdminAccess = () => {
           <Button
             variant="ghost"
             onClick={() => window.location.replace("/home")}
-            className="text-lg px-4">
+            className="text-lg px-4"
+          >
             &larr; Back
           </Button>
           <h1 className="text-lg font-semibold md:text-xl">Manage Users</h1>
@@ -106,7 +107,8 @@ const AdminAccess = () => {
                       <td className="border  p-2">
                         <a
                           className="cursor-pointer text-blue-800 hover:text-blue-400"
-                          href={`mailto:${user.email}`}>
+                          href={`mailto:${user.email}`}
+                        >
                           {user.email}
                         </a>
                       </td>
@@ -115,7 +117,8 @@ const AdminAccess = () => {
                           <AlertDialogTrigger>
                             <Button
                               variant="outline"
-                              className="text-blue-600 hover:bg-blue-100">
+                              className="text-blue-600 hover:bg-blue-100"
+                            >
                               <span>Make Admin</span>
                             </Button>
                           </AlertDialogTrigger>
@@ -132,7 +135,8 @@ const AdminAccess = () => {
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
                               <AlertDialogAction
-                                onClick={() => makeAdmin(user.id)}>
+                                onClick={() => makeAdmin(user.id)}
+                              >
                                 Confirm
                               </AlertDialogAction>
                             </AlertDialogFooter>
